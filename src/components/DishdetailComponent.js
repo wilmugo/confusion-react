@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Card, CardBody, CardImg, CardTitle, CardText, Breadcrumb, BreadcrumbItem, Button, Label, Col, Row, ModalBody, Modal, ModalHeader } from "reactstrap";
 import { Link } from "react-router-dom";
 import { Control, LocalForm, Errors } from "react-redux-form";
+import { Loading } from './LoadingComponent';
 
     const maxLength = (len) => (val) => !(val) || (val.length <= len);
     const minLength = (len) => (val) => val && (val.length >= len);
@@ -17,8 +18,7 @@ import { Control, LocalForm, Errors } from "react-redux-form";
         }
 
         handleSubmit(values) {
-            console.log('Current State is: ' + JSON.stringify(values));
-            alert('Current State is: ' + JSON.stringify(values));
+            this.props.addComment(this.props.dishId, values.rating, values.author, values.comment);
         }
 
         toggleModal() {
@@ -58,7 +58,7 @@ import { Control, LocalForm, Errors } from "react-redux-form";
                                 <Row className="form-group">
                                     <Label htmlFor="yourname" md={5}>Your Name</Label>
                                     <Col md={12}>
-                                        <Control.text model=".yourname" id="yourname" name="firstname"
+                                        <Control.text model=".yourname" id="yourname" name="yourname"
                                             placeholder="Your Name"
                                             className="form-control"
                                             validators={{
@@ -129,7 +129,7 @@ import { Control, LocalForm, Errors } from "react-redux-form";
         }
     }
 
-    function RenderComments({comments}) {
+    function RenderComments({comments, addComment, dishId}) {
         if (comments) {
             const commentsItems = comments.map(item => {
                 return(
@@ -149,7 +149,7 @@ import { Control, LocalForm, Errors } from "react-redux-form";
                     <ul className="list-unstyled">
                         {commentsItems}
                     </ul>
-                    <CommentForm />
+                    <CommentForm dishId={dishId} addComment={addComment}/>
                 </div>
             )
         }
@@ -163,25 +163,45 @@ import { Control, LocalForm, Errors } from "react-redux-form";
 
 
     const DishDetail = (props) => {
-        return(
-            <div className="container">
-                <div className="row">
-                    <Breadcrumb>
+        if (props.isLoading) {
+            return(
+                <div className="container">
+                    <div className="row">            
+                        <Loading />
+                    </div>
+                </div>
+            );
+        }
+        else if (props.errMess) {
+            return(
+                <div className="container">
+                    <div className="row">            
+                        <h4>{props.errMess}</h4>
+                    </div>
+                </div>
+            );
+        }
+        else if(props.dish != null) {
+            return(
+                <div className="container">
+                    <div className="row">
+                        <Breadcrumb>
 
-                        <BreadcrumbItem><Link to="/menu">Menu</Link></BreadcrumbItem>
-                        <BreadcrumbItem active>{props.dish.name}</BreadcrumbItem>
-                    </Breadcrumb>
-                    <div className="col-12">
-                        <h3>{props.dish.name}</h3>
-                        <hr />
-                    </div>                
-                </div>
-                <div className="row">
-                        <RenderDish dish={props.dish} />
-                        <RenderComments comments={props.comments} />
-                </div>
-                </div>
-        )
+                            <BreadcrumbItem><Link to="/menu">Menu</Link></BreadcrumbItem>
+                            <BreadcrumbItem active>{props.dish.name}</BreadcrumbItem>
+                        </Breadcrumb>
+                        <div className="col-12">
+                            <h3>{props.dish.name}</h3>
+                            <hr />
+                        </div>                
+                    </div>
+                    <div className="row">
+                            <RenderDish dish={props.dish} />
+                            <RenderComments comments={props.comments} addComment={props.addComment} dishId={props.dish.id}/>
+                    </div>
+                    </div>
+            )
+        }
     }
 
 export default DishDetail;
